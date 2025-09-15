@@ -1,7 +1,9 @@
+import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
+import { useToast } from "@/hooks/use-toast";
 import { 
   Package, 
   Scan, 
@@ -10,10 +12,13 @@ import {
   Camera, 
   AlertTriangle,
   CheckCircle,
-  Clock
+  Clock,
+  RefreshCw
 } from "lucide-react";
 
 export const Dashboard = () => {
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const { toast } = useToast();
   const metrics = [
     {
       title: "Products Detected",
@@ -53,23 +58,68 @@ export const Dashboard = () => {
     { product: "Chocolate Bar", confidence: 96, status: "confirmed", time: "15 min ago" }
   ];
 
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    // Simulate data refresh
+    await new Promise(resolve => setTimeout(resolve, 1500));
+    setIsRefreshing(false);
+    toast({
+      title: "Dashboard Updated",
+      description: "All metrics have been refreshed successfully.",
+    });
+  };
+
+  const handleViewAllDetections = () => {
+    toast({
+      title: "Feature Coming Soon",
+      description: "Detailed detection history will be available in the next update.",
+    });
+  };
+
+  const handleSystemConfig = () => {
+    toast({
+      title: "System Configuration",
+      description: "Opening advanced settings panel...",
+    });
+  };
+
   return (
-    <section className="py-20 px-6">
+    <section id="dashboard" className="py-20 px-6">
       <div className="max-w-7xl mx-auto">
         {/* Section header */}
         <div className="text-center mb-12">
-          <h2 className="text-4xl font-bold mb-4 text-foreground">
-            Management Dashboard
-          </h2>
-          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            Real-time insights and controls for your AI-powered supermarket operations
-          </p>
+          <div className="flex justify-between items-center mb-8">
+            <div className="flex-1">
+              <h2 className="text-4xl font-bold mb-4 text-foreground">
+                Management Dashboard
+              </h2>
+              <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+                Real-time insights and controls for your AI-powered supermarket operations
+              </p>
+            </div>
+            <Button
+              onClick={handleRefresh}
+              disabled={isRefreshing}
+              variant="outline"
+              className="border-primary/20 text-primary hover:bg-primary/10"
+            >
+              <RefreshCw className={`w-4 h-4 mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
+              {isRefreshing ? 'Refreshing...' : 'Refresh Data'}
+            </Button>
+          </div>
         </div>
 
         {/* Metrics grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
           {metrics.map((metric, index) => (
-            <Card key={index} className="shadow-card transition-smooth hover:shadow-elegant">
+            <Card 
+              key={index} 
+              className="shadow-card transition-smooth hover:shadow-elegant cursor-pointer"
+              onClick={() => toast({
+                title: `${metric.title} Details`,
+                description: `Current value: ${metric.value} (${metric.change} from last month)`
+              })}
+            >
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium text-muted-foreground">
                   {metric.title}
@@ -120,7 +170,11 @@ export const Dashboard = () => {
                   </div>
                 ))}
               </div>
-              <Button variant="outline" className="w-full mt-4 border-primary/20 text-primary hover:bg-primary/10">
+              <Button 
+                variant="outline" 
+                className="w-full mt-4 border-primary/20 text-primary hover:bg-primary/10"
+                onClick={handleViewAllDetections}
+              >
                 View All Detections
               </Button>
             </CardContent>
@@ -174,7 +228,10 @@ export const Dashboard = () => {
                 </div>
               </div>
 
-              <Button className="w-full bg-primary hover:bg-primary/90 text-primary-foreground">
+              <Button 
+                className="w-full bg-primary hover:bg-primary/90 text-primary-foreground"
+                onClick={handleSystemConfig}
+              >
                 System Configuration
               </Button>
             </CardContent>

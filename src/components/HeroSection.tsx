@@ -44,11 +44,20 @@ export const HeroSection = () => {
 
         {/* CTA buttons */}
         <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-16">
-          <Button size="lg" className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-glow transition-smooth px-8 py-4 text-lg">
+          <Button 
+            size="lg" 
+            className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-glow transition-smooth px-8 py-4 text-lg"
+            onClick={() => document.getElementById('detection-demo')?.scrollIntoView({ behavior: 'smooth' })}
+          >
             <Camera className="w-5 h-5 mr-2" />
             Start Detection Demo
           </Button>
-          <Button variant="outline" size="lg" className="border-primary/20 text-primary hover:bg-primary/10 px-8 py-4 text-lg transition-smooth">
+          <Button 
+            variant="outline" 
+            size="lg" 
+            className="border-primary/20 text-primary hover:bg-primary/10 px-8 py-4 text-lg transition-smooth"
+            onClick={() => document.getElementById('dashboard')?.scrollIntoView({ behavior: 'smooth' })}
+          >
             View Dashboard
           </Button>
         </div>

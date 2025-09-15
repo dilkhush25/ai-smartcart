@@ -3,12 +3,14 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { Camera, Play, Pause, RotateCcw, Zap } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { Camera, Play, Pause, RotateCcw, Zap, Package } from "lucide-react";
 
 export const ProductDetectionDemo = () => {
   const [isScanning, setIsScanning] = useState(false);
   const [detectedProducts, setDetectedProducts] = useState([]);
   const [scanProgress, setScanProgress] = useState(0);
+  const { toast } = useToast();
 
   const sampleProducts = [
     { name: "Coca Cola 330ml", confidence: 97.8, price: "$1.99", category: "Beverages" },
@@ -22,6 +24,11 @@ export const ProductDetectionDemo = () => {
     setIsScanning(true);
     setScanProgress(0);
     setDetectedProducts([]);
+    
+    toast({
+      title: "AI Detection Started",
+      description: "Scanning products using computer vision...",
+    });
 
     const interval = setInterval(() => {
       setScanProgress(prev => {
@@ -33,6 +40,12 @@ export const ProductDetectionDemo = () => {
             .sort(() => Math.random() - 0.5)
             .slice(0, Math.floor(Math.random() * 4) + 2);
           setDetectedProducts(randomProducts);
+          
+          toast({
+            title: "Detection Complete",
+            description: `Successfully identified ${randomProducts.length} products!`,
+          });
+          
           return 100;
         }
         return prev + 10;
@@ -44,10 +57,14 @@ export const ProductDetectionDemo = () => {
     setDetectedProducts([]);
     setScanProgress(0);
     setIsScanning(false);
+    toast({
+      title: "Demo Reset",
+      description: "Ready for new product detection session.",
+    });
   };
 
   return (
-    <section className="py-20 px-6 bg-gradient-accent">
+    <section id="detection-demo" className="py-20 px-6 bg-gradient-accent">
       <div className="max-w-6xl mx-auto">
         {/* Section header */}
         <div className="text-center mb-12">
@@ -192,10 +209,3 @@ export const ProductDetectionDemo = () => {
     </section>
   );
 };
-
-// Add missing import
-const Package = ({ className }: { className?: string }) => (
-  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-  </svg>
-);
