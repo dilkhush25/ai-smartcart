@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Camera, Zap, TrendingUp, Shield } from "lucide-react";
+import { Link } from "react-router-dom";
 import heroImage from "@/assets/hero-supermarket.jpg";
 
 export const HeroSection = () => {
@@ -46,19 +47,23 @@ export const HeroSection = () => {
           <Button 
             size="lg" 
             className="gap-2"
-            onClick={() => document.getElementById('dashboard')?.scrollIntoView({ behavior: 'smooth' })}
+            asChild
           >
-            <TrendingUp className="h-5 w-5" />
-            View Dashboard
+            <Link to="/dashboard">
+              <TrendingUp className="h-5 w-5" />
+              View Dashboard
+            </Link>
           </Button>
           <Button 
             size="lg" 
             variant="outline"
             className="gap-2"
-            onClick={() => document.getElementById('inventory')?.scrollIntoView({ behavior: 'smooth' })}
+            asChild
           >
-            <Camera className="h-5 w-5" />
-            Manage Inventory
+            <Link to="/inventory">
+              <Camera className="h-5 w-5" />
+              Manage Inventory
+            </Link>
           </Button>
         </div>
 
