@@ -61,19 +61,18 @@ export function AppDock() {
     <div className='fixed bottom-4 left-1/2 max-w-full -translate-x-1/2 z-50'>
       <Dock className='items-end pb-3'>
         {dockItems.map((item, idx) => (
-          <DockItem
-            key={idx}
-            className={`aspect-square rounded-full transition-colors ${
-              location.pathname === item.href 
-                ? 'bg-primary/20 dark:bg-primary/30' 
-                : 'bg-gray-200 dark:bg-neutral-800'
-            }`}
-          >
-            <DockLabel>{item.title}</DockLabel>
-            <Link to={item.href} className="flex items-center justify-center w-full h-full">
+          <Link key={idx} to={item.href} className="no-underline">
+            <DockItem
+              className={`aspect-square rounded-full transition-colors ${
+                location.pathname === item.href 
+                  ? 'bg-primary/20 dark:bg-primary/30' 
+                  : 'bg-gray-200 dark:bg-neutral-800'
+              }`}
+            >
+              <DockLabel>{item.title}</DockLabel>
               <DockIcon>{item.icon}</DockIcon>
-            </Link>
-          </DockItem>
+            </DockItem>
+          </Link>
         ))}
       </Dock>
     </div>
