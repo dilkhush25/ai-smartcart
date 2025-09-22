@@ -36,7 +36,7 @@ export const Dashboard = () => {
     },
     {
       title: "Daily Revenue",
-      value: "$18,249",
+      value: "₹18,249",
       change: "+8%",
       icon: TrendingUp,
       color: "text-primary"

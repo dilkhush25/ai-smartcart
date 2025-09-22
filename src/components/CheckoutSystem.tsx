@@ -8,6 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { toast } from "@/hooks/use-toast";
 import { ShoppingCart, Plus, Minus, Trash2, Receipt, User } from "lucide-react";
+import { formatCurrencySymbol } from "@/lib/currency";
 
 interface Product {
   id: string;
@@ -260,7 +261,7 @@ export const CheckoutSystem = () => {
                       <div className="flex justify-between items-start mb-2">
                         <h3 className="font-semibold">{product.name}</h3>
                         <span className="text-lg font-bold text-primary">
-                          ${product.price.toFixed(2)}
+                          {formatCurrencySymbol(product.price)}
                         </span>
                       </div>
                       <p className="text-sm text-muted-foreground mb-3">
@@ -330,7 +331,7 @@ export const CheckoutSystem = () => {
                       <div key={item.id} className="flex items-center justify-between p-2 border rounded">
                         <div className="flex-1">
                           <p className="font-medium text-sm">{item.name}</p>
-                          <p className="text-xs text-muted-foreground">${item.price.toFixed(2)} each</p>
+                          <p className="text-xs text-muted-foreground">{formatCurrencySymbol(item.price)} each</p>
                         </div>
                         <div className="flex items-center gap-2">
                           <Button
@@ -364,19 +365,19 @@ export const CheckoutSystem = () => {
 
               {/* Order Summary */}
               {cart.length > 0 && (
-                <div className="space-y-2 pt-2 border-t">
-                  <div className="flex justify-between text-sm">
-                    <span>Subtotal:</span>
-                    <span>${getSubtotal().toFixed(2)}</span>
-                  </div>
-                  <div className="flex justify-between text-sm">
-                    <span>Tax (8%):</span>
-                    <span>${getTax().toFixed(2)}</span>
-                  </div>
-                  <div className="flex justify-between font-bold text-lg border-t pt-2">
-                    <span>Total:</span>
-                    <span>${getTotal().toFixed(2)}</span>
-                  </div>
+                  <div className="space-y-2 pt-2 border-t">
+                    <div className="flex justify-between text-sm">
+                      <span>Subtotal:</span>
+                      <span>{formatCurrencySymbol(getSubtotal())}</span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span>Tax (8%):</span>
+                      <span>{formatCurrencySymbol(getTax())}</span>
+                    </div>
+                    <div className="flex justify-between font-bold text-lg border-t pt-2">
+                      <span>Total:</span>
+                      <span>{formatCurrencySymbol(getTotal())}</span>
+                    </div>
                   <Button
                     onClick={processOrder}
                     disabled={processingOrder}

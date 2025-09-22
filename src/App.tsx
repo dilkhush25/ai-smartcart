@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ThemeProvider } from "next-themes";
+import { AppDock } from "@/components/AppDock";
 import Index from "./pages/Index";
 import Dashboard from "./pages/Dashboard";
 import Inventory from "./pages/Inventory";
@@ -35,6 +36,7 @@ const App = () => (
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
+          <AppDock />
         </BrowserRouter>
       </TooltipProvider>
     </ThemeProvider>

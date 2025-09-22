@@ -7,6 +7,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { toast } from "@/hooks/use-toast";
 import { FileText, Download, Eye, Calendar } from "lucide-react";
 import jsPDF from "jspdf";
+import { formatCurrencySymbol } from "@/lib/currency";
 
 interface Order {
   id: string;
@@ -153,8 +154,8 @@ export const InvoiceGenerator = () => {
         order.order_items.forEach((item) => {
           pdf.text(item.products.name, 25, y);
           pdf.text(item.quantity.toString(), 100, y);
-          pdf.text(`$${item.unit_price.toFixed(2)}`, 125, y);
-          pdf.text(`$${item.total_price.toFixed(2)}`, 165, y);
+          pdf.text(`₹${item.unit_price.toFixed(2)}`, 125, y);
+          pdf.text(`₹${item.total_price.toFixed(2)}`, 165, y);
           y += 8;
         });
       }
@@ -245,7 +246,7 @@ export const InvoiceGenerator = () => {
                         {formatDate(order.created_at)}
                       </div>
                     </TableCell>
-                    <TableCell className="font-semibold">${order.total.toFixed(2)}</TableCell>
+                    <TableCell className="font-semibold">{formatCurrencySymbol(order.total)}</TableCell>
                     <TableCell>
                       <span className={`px-2 py-1 rounded-full text-xs font-medium ${
                         order.status === 'completed' ? 'bg-green-100 text-green-800' : 
@@ -303,8 +304,8 @@ export const InvoiceGenerator = () => {
                                       <TableRow key={item.id}>
                                         <TableCell>{item.products.name}</TableCell>
                                         <TableCell>{item.quantity}</TableCell>
-                                        <TableCell>${item.unit_price.toFixed(2)}</TableCell>
-                                        <TableCell>${item.total_price.toFixed(2)}</TableCell>
+                                        <TableCell>{formatCurrencySymbol(item.unit_price)}</TableCell>
+                                        <TableCell>{formatCurrencySymbol(item.total_price)}</TableCell>
                                       </TableRow>
                                     ))}
                                   </TableBody>

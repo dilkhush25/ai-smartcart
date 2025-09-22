@@ -9,6 +9,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { toast } from "@/hooks/use-toast";
 import { Plus, Edit, Trash2, Package } from "lucide-react";
+import { formatCurrencySymbol } from "@/lib/currency";
 
 interface Product {
   id: string;
@@ -216,7 +217,7 @@ export const InventoryManagement = () => {
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <Label htmlFor="cost">Cost ($) *</Label>
+                      <Label htmlFor="cost">Cost (₹) *</Label>
                       <Input
                         id="cost"
                         type="number"
@@ -228,7 +229,7 @@ export const InventoryManagement = () => {
                       />
                     </div>
                     <div>
-                      <Label htmlFor="price">Price ($) *</Label>
+                      <Label htmlFor="price">Price (₹) *</Label>
                       <Input
                         id="price"
                         type="number"
@@ -291,8 +292,8 @@ export const InventoryManagement = () => {
                     <TableCell>{product.category || "N/A"}</TableCell>
                     <TableCell>{product.quantity}</TableCell>
                     <TableCell>{product.supplier || "N/A"}</TableCell>
-                    <TableCell>${product.cost.toFixed(2)}</TableCell>
-                    <TableCell>${product.price.toFixed(2)}</TableCell>
+                    <TableCell>{formatCurrencySymbol(product.cost)}</TableCell>
+                    <TableCell>{formatCurrencySymbol(product.price)}</TableCell>
                     <TableCell>
                       <div className="flex gap-2">
                         <Button
