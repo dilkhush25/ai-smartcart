@@ -18,11 +18,27 @@ serve(async (req) => {
       throw new Error('OPENAI_API_KEY is not set');
     }
 
-    const { imageData, type = 'analyze' } = await req.json();
+    const { imageData, type = 'analyze', query } = await req.json();
     console.log('Request type:', type);
 
     let prompt = '';
-    if (type === 'analyze') {
+    if (type === 'realtime-scan') {
+      prompt = `You are a real-time product scanner AI. Analyze this image and identify ALL visible products, food items, or consumer goods. For each item you can clearly see, provide:
+
+1. Product name (be specific - include brand if visible)
+2. Category (Food, Beverage, Electronics, Personal Care, etc.)
+3. Brief description
+4. Confidence level (percentage - be realistic)
+5. Estimated price range if recognizable
+6. Brand name if visible
+7. Key ingredients if it's a food/drink item
+8. Basic nutritional highlights if applicable
+
+IMPORTANT: Only report items you can actually see clearly in the image. Be specific and accurate. If you see multiple of the same item, count them.
+
+Respond with a JSON array of objects with these exact fields: name, category, description, confidence, price, brand, ingredients, nutritionalInfo`;
+
+    } else if (type === 'analyze') {
       prompt = `Analyze this image and identify any products, food items, or objects visible. For each item identified, provide:
 1. Product/Item name
 2. Category (e.g., Food, Beverage, Electronics, etc.)
@@ -39,6 +55,52 @@ Format the response as a JSON array of objects with these fields: name, category
 4. Allergen warnings if applicable
 
 Respond in JSON format with an array of objects containing: name, ingredients, nutritional_info, allergens.`;
+    }
+
+    // Handle text-only queries (fallback when no image)
+    if (!imageData && query) {
+      const response = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${OPENAI_API_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: 'gpt-4o-mini',
+          messages: [
+            {
+              role: 'user',
+              content: `Provide ingredient information for: ${query}. Include typical ingredients, nutritional highlights, and any relevant details. Format as JSON with fields: name, ingredients, nutritional_info.`
+            }
+          ],
+          max_tokens: 500,
+          temperature: 0.3,
+        }),
+      });
+
+      const data = await response.json();
+      const aiResponse = data.choices[0].message.content;
+      
+      try {
+        const analysisResult = JSON.parse(aiResponse);
+        return new Response(JSON.stringify({ 
+          success: true,
+          analysis: analysisResult
+        }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      } catch (parseError) {
+        return new Response(JSON.stringify({ 
+          success: true,
+          analysis: { message: aiResponse, items: [] }
+        }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+    }
+
+    if (!imageData) {
+      throw new Error('No image data provided');
     }
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -67,8 +129,8 @@ Respond in JSON format with an array of objects containing: name, ingredients, n
             ]
           }
         ],
-        max_tokens: 1000,
-        temperature: 0.3,
+        max_tokens: 1500,
+        temperature: 0.2,
       }),
     });
 

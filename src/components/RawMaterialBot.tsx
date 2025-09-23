@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "@/hooks/use-toast";
 import { Bot, ChefHat, Search, Loader2, Camera } from "lucide-react";
-import { CameraScanner } from "./CameraScanner";
+import { RealtimeCameraScanner } from "./RealtimeCameraScanner";
 
 interface RawMaterial {
   id: string;
@@ -249,7 +249,7 @@ export const RawMaterialBot = () => {
             </TabsContent>
             
             <TabsContent value="camera" className="mt-6">
-              <CameraScanner />
+              <RealtimeCameraScanner />
             </TabsContent>
           </Tabs>
         </CardContent>
