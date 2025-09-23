@@ -8,8 +8,7 @@ import {
   ShoppingCart, 
   FileText, 
   Home,
-  LogIn,
-  Shield
+  LogIn
 } from "lucide-react";
 
 const navItems = [
@@ -57,12 +56,6 @@ export const Navigation = () => {
               <Link to="/login" className="flex items-center gap-2">
                 <LogIn className="h-4 w-4" />
                 Login
-              </Link>
-            </Button>
-            <Button asChild variant="outline" size="sm">
-              <Link to="/admin" className="flex items-center gap-2">
-                <Shield className="h-4 w-4" />
-                Admin
               </Link>
             </Button>
             <ThemeToggle />
