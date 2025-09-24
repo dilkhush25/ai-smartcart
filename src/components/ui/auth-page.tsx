@@ -1,8 +1,11 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Button } from './button';
+import { useToast } from './use-toast';
+import { supabase } from '@/integrations/supabase/client';
+import { useNavigate } from 'react-router-dom';
 
 import {
 	AppleIcon,
@@ -10,11 +13,113 @@ import {
 	ChevronLeftIcon,
 	GithubIcon,
 	Grid2x2PlusIcon,
+	Loader2,
 } from 'lucide-react';
 import { Input } from './input';
 import { cn } from '@/lib/utils';
 
 export function AuthPage() {
+	const [email, setEmail] = useState('');
+	const [password, setPassword] = useState('');
+	const [isSignUp, setIsSignUp] = useState(false);
+	const [loading, setLoading] = useState(false);
+	const { toast } = useToast();
+	const navigate = useNavigate();
+
+	useEffect(() => {
+		// Check if user is already logged in
+		const checkUser = async () => {
+			const { data: { session } } = await supabase.auth.getSession();
+			if (session) {
+				navigate('/dashboard');
+			}
+		};
+		checkUser();
+	}, [navigate]);
+
+	const handleEmailAuth = async (e: React.FormEvent) => {
+		e.preventDefault();
+		if (!email) {
+			toast({
+				title: "Email required",
+				description: "Please enter your email address",
+				variant: "destructive",
+			});
+			return;
+		}
+
+		setLoading(true);
+		
+		try {
+			if (isSignUp) {
+				if (!password) {
+					toast({
+						title: "Password required",
+						description: "Please enter a password for sign up",
+						variant: "destructive",
+					});
+					setLoading(false);
+					return;
+				}
+				
+				const { error } = await supabase.auth.signUp({
+					email,
+					password,
+					options: {
+						emailRedirectTo: `${window.location.origin}/dashboard`
+					}
+				});
+				
+				if (error) throw error;
+				
+				toast({
+					title: "Check your email",
+					description: "We've sent you a confirmation link",
+				});
+			} else {
+				const { error } = await supabase.auth.signInWithOtp({
+					email,
+					options: {
+						emailRedirectTo: `${window.location.origin}/dashboard`
+					}
+				});
+				
+				if (error) throw error;
+				
+				toast({
+					title: "Check your email",
+					description: "We've sent you a magic link to sign in",
+				});
+			}
+		} catch (error: any) {
+			toast({
+				title: "Authentication failed",
+				description: error.message,
+				variant: "destructive",
+			});
+		} finally {
+			setLoading(false);
+		}
+	};
+
+	const handleGoogleAuth = async () => {
+		try {
+			const { error } = await supabase.auth.signInWithOAuth({
+				provider: 'google',
+				options: {
+					redirectTo: `${window.location.origin}/dashboard`
+				}
+			});
+			if (error) throw error;
+		} catch (error: any) {
+			toast({
+				title: "Authentication failed",
+				description: error.message,
+				variant: "destructive",
+			});
+		}
+	};
+
 	return (
 		<main className="relative md:h-screen md:overflow-hidden lg:grid lg:grid-cols-2">
 			<div className="bg-muted/60 relative hidden h-full flex-col border-r p-10 lg:flex">
@@ -61,22 +166,22 @@ export function AuthPage() {
 					</div>
 					<div className="flex flex-col space-y-1">
 						<h1 className="font-heading text-2xl font-bold tracking-wide">
-							Sign In or Join Now!
+							{isSignUp ? 'Create Account' : 'Sign In or Join Now!'}
 						</h1>
 						<p className="text-muted-foreground text-base">
-							Login or create your SupermarketAI account.
+							{isSignUp ? 'Create your SupermarketAI account' : 'Login or create your SupermarketAI account.'}
 						</p>
 					</div>
 					<div className="space-y-2">
-						<Button type="button" size="lg" className="w-full">
+						<Button type="button" size="lg" className="w-full" onClick={handleGoogleAuth}>
 							<GoogleIcon className='size-4 me-2' />
 							Continue with Google
 						</Button>
-						<Button type="button" size="lg" className="w-full">
+						<Button type="button" size="lg" className="w-full" disabled>
 							<AppleIcon className='size-4 me-2' />
 							Continue with Apple
 						</Button>
-						<Button type="button" size="lg" className="w-full">
+						<Button type="button" size="lg" className="w-full" disabled>
 							<GithubIcon className='size-4 me-2' />
 							Continue with GitHub
 						</Button>
@@ -84,23 +189,52 @@ export function AuthPage() {
 
 					<AuthSeparator />
 
-					<form className="space-y-2">
+					<form className="space-y-2" onSubmit={handleEmailAuth}>
 						<p className="text-muted-foreground text-start text-xs">
-							Enter your email address to sign in or create an account
+							{isSignUp ? 'Create an account with email and password' : 'Enter your email address to sign in or create an account'}
 						</p>
 						<div className="relative h-max">
 							<Input
 								placeholder="your.email@example.com"
 								className="peer ps-9"
 								type="email"
+								value={email}
+								onChange={(e) => setEmail(e.target.value)}
+								required
 							/>
 							<div className="text-muted-foreground pointer-events-none absolute inset-y-0 start-0 flex items-center justify-center ps-3 peer-disabled:opacity-50">
 								<AtSignIcon className="size-4" aria-hidden="true" />
 							</div>
 						</div>
 
-						<Button type="button" className="w-full">
-							<span>Continue With Email</span>
+						{isSignUp && (
+							<div className="relative h-max">
+								<Input
+									placeholder="Create a secure password"
+									className="peer ps-9"
+									type="password"
+									value={password}
+									onChange={(e) => setPassword(e.target.value)}
+									required
+								/>
+								<div className="text-muted-foreground pointer-events-none absolute inset-y-0 start-0 flex items-center justify-center ps-3 peer-disabled:opacity-50">
+									<GithubIcon className="size-4" aria-hidden="true" />
+								</div>
+							</div>
+						)}
+
+						<Button type="submit" className="w-full" disabled={loading}>
+							{loading && <Loader2 className="size-4 me-2 animate-spin" />}
+							<span>{isSignUp ? 'Create Account' : 'Continue With Email'}</span>
+						</Button>
+
+						<Button 
+							type="button" 
+							variant="ghost" 
+							className="w-full text-sm" 
+							onClick={() => setIsSignUp(!isSignUp)}
+						>
+							{isSignUp ? 'Already have an account? Sign in' : 'Need an account? Sign up'}
 						</Button>
 					</form>
 					<p className="text-muted-foreground mt-8 text-sm">

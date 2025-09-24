@@ -1,11 +1,94 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Shield, ChevronLeftIcon, Grid2x2PlusIcon, AtSignIcon, LockIcon } from 'lucide-react';
+import { useToast } from "@/components/ui/use-toast";
+import { supabase } from '@/integrations/supabase/client';
+import { useNavigate } from 'react-router-dom';
+import { Shield, ChevronLeftIcon, Grid2x2PlusIcon, AtSignIcon, LockIcon, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const AdminLogin = () => {
+  const [email, setEmail] = useState('admin@supermarketai.com');
+  const [password, setPassword] = useState('admin123');
+  const [loading, setLoading] = useState(false);
+  const { toast } = useToast();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    // Check if user is already logged in
+    const checkUser = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        navigate('/dashboard');
+      }
+    };
+    checkUser();
+  }, [navigate]);
+
+  const handleAdminLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    // Check if using default admin credentials
+    if (email !== 'admin@supermarketai.com' || password !== 'admin123') {
+      toast({
+        title: "Invalid admin credentials",
+        description: "Please use the default admin email and password",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setLoading(true);
+    
+    try {
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+      
+      if (error) {
+        // If admin user doesn't exist, create it
+        if (error.message.includes('Invalid login credentials')) {
+          const { error: signUpError } = await supabase.auth.signUp({
+            email,
+            password,
+            options: {
+              data: {
+                role: 'admin',
+                first_name: 'Admin',
+                last_name: 'User'
+              }
+            }
+          });
+          
+          if (signUpError) throw signUpError;
+          
+          toast({
+            title: "Admin account created",
+            description: "Please check your email to confirm your account",
+          });
+        } else {
+          throw error;
+        }
+      } else {
+        toast({
+          title: "Welcome Admin",
+          description: "Successfully signed in",
+        });
+        navigate('/dashboard');
+      }
+    } catch (error: any) {
+      toast({
+        title: "Authentication failed",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <main className="relative md:h-screen md:overflow-hidden lg:grid lg:grid-cols-2">
       <div className="bg-muted/60 relative hidden h-full flex-col border-r p-10 lg:flex">
@@ -61,7 +144,7 @@ const AdminLogin = () => {
             </p>
           </div>
           
-          <form className="space-y-4">
+          <form className="space-y-4" onSubmit={handleAdminLogin}>
             <div className="space-y-2">
               <label htmlFor="email" className="text-sm font-medium">
                 Admin Email
@@ -72,6 +155,9 @@ const AdminLogin = () => {
                   placeholder="admin@supermarketai.com"
                   className="peer ps-9"
                   type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
                 />
                 <div className="text-muted-foreground pointer-events-none absolute inset-y-0 start-0 flex items-center justify-center ps-3 peer-disabled:opacity-50">
                   <AtSignIcon className="size-4" aria-hidden="true" />
@@ -86,9 +172,12 @@ const AdminLogin = () => {
               <div className="relative">
                 <Input
                   id="password"
-                  placeholder="Enter your secure password"
+                  placeholder="admin123"
                   className="peer ps-9"
                   type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
                 />
                 <div className="text-muted-foreground pointer-events-none absolute inset-y-0 start-0 flex items-center justify-center ps-3 peer-disabled:opacity-50">
                   <LockIcon className="size-4" aria-hidden="true" />
@@ -96,23 +185,16 @@ const AdminLogin = () => {
               </div>
             </div>
             
-            <div className="flex items-center justify-between">
-              <label className="flex items-center space-x-2">
-                <input
-                  type="checkbox"
-                  className="rounded border-gray-300 text-primary focus:ring-primary"
-                />
-                <span className="text-sm text-muted-foreground">Remember me</span>
-              </label>
-              <a
-                href="#"
-                className="text-sm text-primary hover:underline"
-              >
-                Forgot password?
-              </a>
+            <div className="bg-muted/50 p-3 rounded-lg">
+              <p className="text-sm text-muted-foreground">
+                <strong>Default Admin Credentials:</strong><br />
+                Email: admin@supermarketai.com<br />
+                Password: admin123
+              </p>
             </div>
 
-            <Button type="submit" className="w-full" size="lg">
+            <Button type="submit" className="w-full" size="lg" disabled={loading}>
+              {loading && <Loader2 className="size-4 me-2 animate-spin" />}
               <Shield className="size-4 me-2" />
               Sign In as Admin
             </Button>
