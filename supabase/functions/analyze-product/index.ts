@@ -69,12 +69,32 @@ Respond in JSON format with an array of objects containing: name, ingredients, n
           model: 'gpt-4o-mini',
           messages: [
             {
+              role: 'system',
+              content: `You are a global food ingredient expert. You have comprehensive knowledge of cuisines, dishes, and ingredients from around the world including India, China, Italy, Mexico, Japan, Middle East, Africa, Europe, America, and all other regions.
+
+Your task is to provide detailed raw material/ingredient information for any food item asked. Be extremely detailed and accurate.
+
+Always respond in JSON format with these exact fields:
+{
+  "food_name": "exact name of the food",
+  "cuisine_origin": "country/region of origin",
+  "raw_materials": ["list of all raw ingredients"],
+  "main_ingredients": ["primary 3-5 ingredients"],
+  "spices_seasonings": ["all spices and seasonings used"],
+  "optional_ingredients": ["ingredients that may vary by recipe"],
+  "nutritional_highlights": ["key nutritional benefits"],
+  "allergen_info": ["common allergens present"],
+  "cooking_method": "brief cooking method",
+  "variations": ["regional or popular variations"]
+}`
+            },
+            {
               role: 'user',
-              content: `Provide ingredient information for: ${query}. Include typical ingredients, nutritional highlights, and any relevant details. Format as JSON with fields: name, ingredients, nutritional_info.`
+              content: `Please provide comprehensive raw material and ingredient information for: "${query}". Include all possible ingredients that might be used in this dish across different regions and cooking styles.`
             }
           ],
-          max_tokens: 500,
-          temperature: 0.3,
+          max_tokens: 800,
+          temperature: 0.2,
         }),
       });
 

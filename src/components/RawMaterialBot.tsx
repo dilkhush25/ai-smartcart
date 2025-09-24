@@ -62,69 +62,98 @@ export const RawMaterialBot = () => {
     setFoodItem("");
 
     try {
-      // Search in database first
-      const { data, error } = await supabase
-        .from("raw_materials")
-        .select("*")
-        .ilike("food_item", `%${query.trim()}%`)
-        .limit(1);
+      // Use AI analysis as primary method for global food search
+      const { data: aiData, error: aiError } = await supabase.functions.invoke('analyze-product', {
+        body: { 
+          imageData: null, // No image for text query
+          type: 'ingredients',
+          query: query.trim()
+        }
+      });
 
-      if (error) throw error;
+      if (aiError) throw aiError;
 
-      if (data && data.length > 0) {
-        const item = data[0];
-        const ingredients = Array.isArray(item.ingredients) 
-          ? (item.ingredients as string[])
-          : typeof item.ingredients === 'string' 
-            ? JSON.parse(item.ingredients)
-            : [];
-        setResult(ingredients);
-        setFoodItem(item.food_item);
-        toast({
-          title: "Found!",
-          description: `Ingredients for ${item.food_item} retrieved successfully`
-        });
-      } else {
-        // If not found in database, try AI analysis
-        try {
-          const { data: aiData, error: aiError } = await supabase.functions.invoke('analyze-product', {
-            body: { 
-              imageData: null, // No image for text query
-              type: 'ingredients',
-              query: query.trim()
-            }
+      if (aiData && aiData.analysis) {
+        const analysisData = aiData.analysis;
+        
+        // If we got a proper JSON response with detailed ingredients
+        if (analysisData.raw_materials && Array.isArray(analysisData.raw_materials)) {
+          const allIngredients = [
+            ...analysisData.main_ingredients || [],
+            ...analysisData.raw_materials || [],
+            ...analysisData.spices_seasonings || [],
+            ...analysisData.optional_ingredients || []
+          ];
+          
+          // Remove duplicates
+          const uniqueIngredients = [...new Set(allIngredients)];
+          setResult(uniqueIngredients);
+          setFoodItem(analysisData.food_name || query);
+          
+          toast({
+            title: "AI Analysis Complete!",
+            description: `Found ${uniqueIngredients.length} ingredients for ${analysisData.food_name || query}`,
           });
+        } else {
+          // Fallback for non-JSON or simple responses
+          const ingredients = Array.isArray(analysisData) 
+            ? analysisData.map(item => item.name || item.ingredient || item).filter(Boolean)
+            : typeof analysisData === 'string'
+              ? [analysisData]
+              : [`Found information for ${query}`];
+          
+          setResult(ingredients);
+          setFoodItem(query);
+          toast({
+            title: "AI Analysis",
+            description: "Ingredient information retrieved using AI",
+          });
+        }
+      } else {
+        throw new Error("AI analysis failed");
+      }
+    } catch (error: any) {
+      // Fallback to database search if AI fails
+      try {
+        const { data, error } = await supabase
+          .from("raw_materials")
+          .select("*")
+          .ilike("food_item", `%${query.trim()}%`)
+          .limit(1);
 
-          if (aiError) throw aiError;
+        if (error) throw error;
 
-          if (aiData && aiData.analysis) {
-            // Use AI response as fallback
-            setResult([`AI suggests ingredients for ${query}:`, "This is an AI-generated response", "Use camera scanner for more accurate results"]);
-            setFoodItem(query);
-            toast({
-              title: "AI Analysis",
-              description: "Generated ingredient suggestions using AI",
-            });
-          } else {
-            throw new Error("AI analysis failed");
-          }
-        } catch (aiError) {
-          // Final fallback
-          setResult(["Item not found in database", "Try searching for: Pasta, Pizza, Fried Rice, Sandwich, or Salad", "Or use the camera scanner for real-time analysis"]);
+        if (data && data.length > 0) {
+          const item = data[0];
+          const ingredients = Array.isArray(item.ingredients) 
+            ? (item.ingredients as string[])
+            : typeof item.ingredients === 'string' 
+              ? JSON.parse(item.ingredients)
+              : [];
+          setResult(ingredients);
+          setFoodItem(item.food_item);
+          toast({
+            title: "Found in Database!",
+            description: `Ingredients for ${item.food_item} retrieved from local database`
+          });
+        } else {
+          setResult([`Sorry, I couldn't find ingredients for "${query}".`, "Please try:", "• A more specific food name", "• Different spelling", "• Use the camera scanner for visual analysis"]);
           setFoodItem(query);
           toast({
             title: "Not Found",
-            description: "Try using the camera scanner for better results.",
+            description: "Try a different food name or use the camera scanner",
             variant: "destructive"
           });
         }
+      } catch (dbError) {
+        setResult([`Error searching for "${query}".`, "Please check your internet connection", "Or try the camera scanner"]);
+        setFoodItem(query);
+        toast({
+          title: "Search Error",
+          description: "Failed to search for ingredients",
+          variant: "destructive"
+        });
       }
-    } catch (error: any) {
-      toast({
-        title: "Error",
-        description: "Failed to search for ingredients",
-        variant: "destructive"
-      });
     } finally {
       setLoading(false);
     }
@@ -149,7 +178,7 @@ export const RawMaterialBot = () => {
             <CardTitle className="text-2xl">AI-Powered Raw Material Assistant</CardTitle>
           </div>
           <p className="text-muted-foreground">
-            Get ingredient information through text search or real-time camera scanning with AI analysis
+            Search for ingredients of ANY food from around the world using AI. Works with Indian, Chinese, Italian, Mexican, Japanese, and all global cuisines!
           </p>
         </CardHeader>
         <CardContent>
@@ -170,7 +199,7 @@ export const RawMaterialBot = () => {
               <div className="flex gap-2">
                 <div className="flex-1">
                   <Input
-                    placeholder="Enter food item name (e.g., Pasta, Pizza, Sandwich...)"
+                    placeholder="Enter ANY food name: Biryani, Sushi, Tacos, Pasta, Samosa, Pad Thai..."
                     value={query}
                     onChange={(e) => setQuery(e.target.value)}
                     onKeyPress={handleKeyPress}
@@ -195,20 +224,23 @@ export const RawMaterialBot = () => {
               <div>
                 <h3 className="font-semibold mb-3 flex items-center gap-2">
                   <ChefHat className="h-4 w-4" />
-                  Available Items
+                  Quick Suggestions (Try anything!)
                 </h3>
                 <div className="flex flex-wrap gap-2">
-                  {allItems.map((item) => (
+                  {["Biryani", "Butter Chicken", "Sushi", "Ramen", "Tacos", "Pasta Carbonara", "Pad Thai", "Samosa", "Pizza Margherita", "Fried Rice"].map((item) => (
                     <Badge
-                      key={item.id}
+                      key={item}
                       variant="secondary"
                       className="cursor-pointer hover:bg-secondary/80 transition-colors"
-                      onClick={() => handleSuggestionClick(item.food_item)}
+                      onClick={() => handleSuggestionClick(item)}
                     >
-                      {item.food_item}
+                      {item}
                     </Badge>
                   ))}
                 </div>
+                <p className="text-xs text-muted-foreground mt-2">
+                  ✨ These are just examples - you can search for ANY food from ANY cuisine worldwide!
+                </p>
               </div>
 
               {/* Results Section */}
@@ -243,7 +275,7 @@ export const RawMaterialBot = () => {
                   <span className="font-medium">Raw Material Bot</span>
                 </div>
                 <p className="text-sm text-muted-foreground">
-                  💡 Tip: I can help you find ingredients for various dishes. Type any food item name or use the camera scanner for real-time analysis!
+                  🌍 Global Food Expert: I know ingredients for dishes from India, China, Italy, Mexico, Japan, Middle East, Africa, and ALL world cuisines! Try searching for: Biryani, Sushi, Tacos, Paella, Moussaka, Curry, Dim Sum, or anything else!
                 </p>
               </div>
             </TabsContent>
