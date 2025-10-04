@@ -126,7 +126,7 @@ export function AuthPage() {
 				<div className="from-background absolute inset-0 z-10 bg-gradient-to-t to-transparent" />
 				<div className="z-10 flex items-center gap-2">
 					<Grid2x2PlusIcon className="size-6" />
-					<p className="text-xl font-semibold">SupermarketAI</p>
+					<p className="text-xl font-semibold">AI SmartCart</p>
 				</div>
 				<div className="z-10 mt-auto">
 					<blockquote className="space-y-2">
@@ -162,14 +162,14 @@ export function AuthPage() {
 				<div className="mx-auto space-y-4 sm:w-sm">
 					<div className="flex items-center gap-2 lg:hidden">
 						<Grid2x2PlusIcon className="size-6" />
-						<p className="text-xl font-semibold">SupermarketAI</p>
+						<p className="text-xl font-semibold">AI SmartCart</p>
 					</div>
 					<div className="flex flex-col space-y-1">
 						<h1 className="font-heading text-2xl font-bold tracking-wide">
 							{isSignUp ? 'Create Account' : 'Sign In or Join Now!'}
 						</h1>
 						<p className="text-muted-foreground text-base">
-							{isSignUp ? 'Create your SupermarketAI account' : 'Login or create your SupermarketAI account.'}
+							{isSignUp ? 'Create your AI SmartCart account' : 'Login or create your AI SmartCart account.'}
 						</p>
 					</div>
 					<div className="space-y-2">

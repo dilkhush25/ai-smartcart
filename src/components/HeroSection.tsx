@@ -31,9 +31,9 @@ export const HeroSection = () => {
 
         {/* Main heading */}
         <h1 className="text-5xl md:text-7xl font-bold mb-8 bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent leading-tight">
-          Supermarket Management
+          AI SmartCart
           <span className="block text-4xl md:text-6xl mt-2">
-            with AI Product Detection
+            Intelligent Shopping Experience
           </span>
         </h1>
 

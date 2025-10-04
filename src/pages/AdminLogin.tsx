@@ -9,7 +9,7 @@ import { Shield, ChevronLeftIcon, Grid2x2PlusIcon, AtSignIcon, LockIcon, Loader2
 import { cn } from '@/lib/utils';
 
 const AdminLogin = () => {
-  const [email, setEmail] = useState('admin@supermarketai.com');
+  const [email, setEmail] = useState('admin@aismartcart.com');
   const [password, setPassword] = useState('admin123');
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
@@ -30,7 +30,7 @@ const AdminLogin = () => {
     e.preventDefault();
     
     // Check if using default admin credentials
-    if (email !== 'admin@supermarketai.com' || password !== 'admin123') {
+    if (email !== 'admin@aismartcart.com' || password !== 'admin123') {
       toast({
         title: "Invalid admin credentials",
         description: "Please use the default admin email and password",
@@ -95,7 +95,7 @@ const AdminLogin = () => {
         <div className="from-background absolute inset-0 z-10 bg-gradient-to-t to-transparent" />
         <div className="z-10 flex items-center gap-2">
           <Grid2x2PlusIcon className="size-6" />
-          <p className="text-xl font-semibold">SupermarketAI</p>
+          <p className="text-xl font-semibold">AI SmartCart</p>
         </div>
         <div className="z-10 mt-auto">
           <blockquote className="space-y-2">
@@ -127,7 +127,7 @@ const AdminLogin = () => {
         <div className="mx-auto space-y-6 sm:w-sm">
           <div className="flex items-center gap-2 lg:hidden">
             <Grid2x2PlusIcon className="size-6" />
-            <p className="text-xl font-semibold">SupermarketAI</p>
+            <p className="text-xl font-semibold">AI SmartCart</p>
           </div>
           
           <div className="flex flex-col space-y-2 text-center">
@@ -152,7 +152,7 @@ const AdminLogin = () => {
               <div className="relative">
                 <Input
                   id="email"
-                  placeholder="admin@supermarketai.com"
+                  placeholder="admin@aismartcart.com"
                   className="peer ps-9"
                   type="email"
                   value={email}
@@ -188,7 +188,7 @@ const AdminLogin = () => {
             <div className="bg-muted/50 p-3 rounded-lg">
               <p className="text-sm text-muted-foreground">
                 <strong>Default Admin Credentials:</strong><br />
-                Email: admin@supermarketai.com<br />
+                Email: admin@aismartcart.com<br />
                 Password: admin123
               </p>
             </div>

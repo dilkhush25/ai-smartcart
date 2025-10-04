@@ -95,7 +95,7 @@ export const InvoiceGenerator = () => {
       y += 15;
       pdf.setFontSize(16);
       pdf.setFont("helvetica", "normal");
-      pdf.text("Supermarket Management System", pageWidth / 2, y, { align: "center" });
+      pdf.text("AI SmartCart", pageWidth / 2, y, { align: "center" });
 
       y += 20;
 
